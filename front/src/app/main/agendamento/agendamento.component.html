@@ -1,0 +1,156 @@
+<div class="grid">
+    <div class="col-12">
+        <div class="card px-4 py-4 md:px-6 md:py-5">
+            <p-toolbar styleClass="mb-4 gap-2">
+                <ng-template pTemplate="left">
+                    <div class="flex flex-wrap gap-2 align-items-center">
+                        <button pButton pRipple label="Novo agendamento" icon="pi pi-plus" class="p-button-success"
+                            (click)="abrirNovo()"></button>
+                        <p-dropdown [options]="statusOpcoes" [(ngModel)]="filtroStatus" (onChange)="carregar()"
+                            [showClear]="true" placeholder="Todos os status" styleClass="w-full sm:w-12rem"></p-dropdown>
+                        <p-calendar [(ngModel)]="filtroData" (onSelect)="carregar()" (onClear)="carregar()"
+                            [showClear]="true" [showIcon]="true" dateFormat="dd/mm/yy" placeholder="Qualquer dia"
+                            styleClass="w-full sm:w-12rem" appendTo="body"></p-calendar>
+                        <button pButton type="button" label="Hoje" class="p-button-outlined" (click)="filtrarHoje()"></button>
+                        <button pButton type="button" icon="pi pi-filter-slash" class="p-button-text"
+                            pTooltip="Limpar filtros" (click)="limparFiltros()"></button>
+                    </div>
+                </ng-template>
+                <ng-template pTemplate="right">
+                    <button pButton pRipple label="Exportar CSV" icon="pi pi-download"
+                        class="p-button-help p-button-outlined" (click)="dt.exportCSV()"></button>
+                </ng-template>
+            </p-toolbar>
+
+            <p-table #dt [value]="agendamentos" [columns]="colunasCsv" exportFilename="agendamentos" [loading]="carregando"
+                responsiveLayout="stack" breakpoint="1200px" [rows]="10" [paginator]="true"
+                [rowsPerPageOptions]="[10, 20, 50]" [showCurrentPageReport]="true"
+                currentPageReportTemplate="{first} a {last} de {totalRecords} agendamentos"
+                [globalFilterFields]="['pet_nome', 'tutor_nome', 'servico_nome', 'status']" [rowHover]="true" dataKey="id">
+                <ng-template pTemplate="caption">
+                    <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center gap-2">
+                        <h5 class="m-0">Agendamentos</h5>
+                        <span class="block p-input-icon-left">
+                            <i class="pi pi-search"></i>
+                            <input pInputText type="text" (input)="onGlobalFilter(dt, $event)"
+                                placeholder="Buscar por pet, tutor, serviço..." class="w-full sm:w-20rem" />
+                        </span>
+                    </div>
+                </ng-template>
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th pSortableColumn="data_hora">Data/Hora <p-sortIcon field="data_hora"></p-sortIcon></th>
+                        <th pSortableColumn="pet_nome">Pet <p-sortIcon field="pet_nome"></p-sortIcon></th>
+                        <th pSortableColumn="tutor_nome">Tutor <p-sortIcon field="tutor_nome"></p-sortIcon></th>
+                        <th pSortableColumn="servico_nome">Serviço <p-sortIcon field="servico_nome"></p-sortIcon></th>
+                        <th pSortableColumn="status">Status <p-sortIcon field="status"></p-sortIcon></th>
+                        <th class="text-right">Ações</th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-a>
+                    <tr>
+                        <td>
+                            <span class="p-column-title">Data/Hora</span>
+                            <!-- Valores com mais de uma parte ficam num span só, para não se espalharem no modo celular - [Otávio Michels] -->
+                            <span>
+                                <span class="font-medium">{{ a.data_hora | date:'dd/MM/yyyy' }}</span>
+                                <span class="ml-2 text-600">{{ a.data_hora | date:'HH:mm' }}</span>
+                            </span>
+                        </td>
+                        <td><span class="p-column-title">Pet</span><span>{{ a.pet_nome }} <small class="text-600">({{ a.pet_especie }})</small></span></td>
+                        <td><span class="p-column-title">Tutor</span>{{ a.tutor_nome }}</td>
+                        <td>
+                            <span class="p-column-title">Serviço</span>
+                            <span>{{ a.servico_nome }} <small class="text-600">{{ a.servico_preco | currency:'BRL' }}</small></span>
+                        </td>
+                        <td><span class="p-column-title">Status</span><p-tag [value]="a.status" [severity]="severidade(a.status)"></p-tag></td>
+                        <td>
+                            <span class="p-column-title">Ações</span>
+                            <div class="flex md:justify-content-end gap-2">
+                                <button *ngIf="a.status === 'Agendado'" pButton pRipple icon="pi pi-thumbs-up"
+                                    class="p-button-rounded p-button-outlined" pTooltip="Confirmar"
+                                    (click)="mudarStatus(a, 'Confirmado')"></button>
+                                <button *ngIf="emAberto(a)" pButton pRipple icon="pi pi-check"
+                                    class="p-button-rounded p-button-outlined p-button-success" pTooltip="Concluir"
+                                    (click)="mudarStatus(a, 'Concluído')"></button>
+                                <button pButton pRipple icon="pi pi-pencil" class="p-button-rounded p-button-success"
+                                    pTooltip="Editar" (click)="editar(a)"></button>
+                                <button pButton pRipple icon="pi pi-trash" class="p-button-rounded p-button-warning"
+                                    pTooltip="Excluir" (click)="excluir(a)"></button>
+                            </div>
+                        </td>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="emptymessage">
+                    <tr><td colspan="6" class="text-center p-4">Nenhum agendamento encontrado.</td></tr>
+                </ng-template>
+            </p-table>
+        </div>
+
+        <p-dialog [(visible)]="agendamentoDialog" [style]="{ width: '560px' }" [breakpoints]="{ '640px': '95vw' }"
+            [header]="agendamento.id ? 'Editar agendamento' : 'Novo agendamento'" [modal]="true" class="p-fluid">
+            <ng-template pTemplate="content">
+                <div class="field">
+                    <label for="tutor">Tutor *</label>
+                    <p-dropdown inputId="tutor" appendTo="body" [options]="tutores" optionLabel="nome" optionValue="id"
+                        [(ngModel)]="agendamento.tutor_id" (onChange)="aoMudarTutor()" [filter]="true"
+                        placeholder="Selecione o tutor"
+                        [ngClass]="{ 'campo-invalido': submitted && !agendamento.tutor_id }"></p-dropdown>
+                    <small class="p-error" *ngIf="submitted && !agendamento.tutor_id">Tutor é obrigatório</small>
+                </div>
+                <div class="field">
+                    <label for="pet">Pet *</label>
+                    <p-dropdown inputId="pet" appendTo="body" [options]="petsDoTutor" optionLabel="nome" optionValue="id"
+                        [(ngModel)]="agendamento.pet_id" [disabled]="!agendamento.tutor_id || carregandoPets"
+                        [placeholder]="!agendamento.tutor_id ? 'Escolha o tutor primeiro' : (petsDoTutor.length ? 'Selecione o pet' : 'Este tutor não tem pets')"
+                        [ngClass]="{ 'campo-invalido': submitted && !agendamento.pet_id }">
+                        <ng-template let-pet pTemplate="item">{{ pet.nome }} <small class="text-600">· {{ pet.especie }}</small></ng-template>
+                    </p-dropdown>
+                    <small class="p-error" *ngIf="submitted && !agendamento.pet_id">Pet é obrigatório</small>
+                </div>
+                <div class="field">
+                    <label for="servico">Serviço *</label>
+                    <p-dropdown inputId="servico" appendTo="body" [options]="servicos" optionLabel="nome" optionValue="id"
+                        [(ngModel)]="agendamento.servico_id" placeholder="Selecione o serviço"
+                        [ngClass]="{ 'campo-invalido': submitted && !agendamento.servico_id }">
+                        <ng-template let-s pTemplate="item">
+                            <div class="flex justify-content-between w-full gap-3">
+                                <span>{{ s.nome }}</span><span class="text-600">{{ s.preco | currency:'BRL' }}</span>
+                            </div>
+                        </ng-template>
+                    </p-dropdown>
+                    <small class="p-error" *ngIf="submitted && !agendamento.servico_id">Serviço é obrigatório</small>
+                    <small class="block mt-1 text-600" *ngIf="servicoEscolhido">
+                        Valor: {{ servicoEscolhido.preco | currency:'BRL' }}
+                    </small>
+                </div>
+                <div class="formgrid grid">
+                    <div class="field col-12 sm:col-7">
+                        <label for="dataHora">Data e hora *</label>
+                        <p-calendar inputId="dataHora" [(ngModel)]="dataHora" [showTime]="true" hourFormat="24"
+                            [stepMinute]="15" dateFormat="dd/mm/yy" [showIcon]="true" appendTo="body"
+                            [ngClass]="{ 'campo-invalido': submitted && !dataHora }"></p-calendar>
+                        <small class="p-error" *ngIf="submitted && !dataHora">Data e hora são obrigatórias</small>
+                    </div>
+                    <div class="field col-12 sm:col-5">
+                        <label for="status">Status *</label>
+                        <p-dropdown inputId="status" appendTo="body" [options]="statusOpcoes"
+                            [(ngModel)]="agendamento.status"></p-dropdown>
+                    </div>
+                </div>
+                <div class="field">
+                    <label for="observacoes">Observações</label>
+                    <textarea pInputTextarea id="observacoes" [(ngModel)]="agendamento.observacoes" rows="2"
+                        [autoResize]="true" placeholder="Ex.: pet tem medo de secador"></textarea>
+                </div>
+            </ng-template>
+
+            <ng-template pTemplate="footer">
+                <button pButton pRipple label="Cancelar" icon="pi pi-times" class="p-button-text"
+                    (click)="agendamentoDialog = false"></button>
+                <button pButton pRipple label="Salvar" icon="pi pi-check" [loading]="salvando"
+                    (click)="salvar()"></button>
+            </ng-template>
+        </p-dialog>
+    </div>
+</div>
