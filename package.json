@@ -1,0 +1,14 @@
+{
+  "name": "petshop-fullstack",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Sistema de petshop fullstack: front Angular + PrimeNG e API Node/Express com JWT e Swagger",
+  "scripts": {
+    "setup": "npm run install:all && node back/criar-env.js && npm run build",
+    "install:all": "npm install --prefix back && npm install --prefix front",
+    "build": "npm run build --prefix front",
+    "start": "npm start --prefix back",
+    "dev:back": "npm run dev --prefix back",
+    "dev:front": "npm start --prefix front"
+  }
+}
