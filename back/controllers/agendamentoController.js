@@ -6,6 +6,17 @@ const { HttpError, exigirCampos, idDaRota, texto } = require('./helpers')
 
 const STATUS = ['Agendado', 'Confirmado', 'Concluído', 'Cancelado']
 
+// O Date do JavaScript aceita 31/02 e pula para março; a data só vale se dia, mês e hora existirem de verdade - [Gabriel França]
+function dataHoraExiste(dataHora) {
+    const partes = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/.exec(dataHora)
+    if (!partes) return false
+    const [ano, mes, dia, hora, minuto] = partes.slice(1).map(Number)
+    // Em UTC para o horário de verão do servidor não mexer na conta - [Gabriel França]
+    const d = new Date(Date.UTC(ano, mes - 1, dia, hora, minuto))
+    return d.getUTCFullYear() === ano && d.getUTCMonth() === mes - 1 && d.getUTCDate() === dia &&
+        d.getUTCHours() === hora && d.getUTCMinutes() === minuto
+}
+
 // Valida o agendamento: tutor, pet e serviço precisam existir e o pet tem que ser do tutor - [Otávio Michels]
 async function dadosDoAgendamento(body) {
     exigirCampos(body, ['tutor_id', 'pet_id', 'servico_id', 'data_hora'])
@@ -21,7 +32,7 @@ async function dadosDoAgendamento(body) {
 
     // Data e hora no formato local AAAA-MM-DDTHH:MM (o mesmo do input datetime-local) - [Otávio Michels]
     const dataHora = String(body.data_hora).slice(0, 16)
-    if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(dataHora) || isNaN(new Date(dataHora).getTime())) {
+    if (!dataHoraExiste(dataHora)) {
         throw new HttpError(400, 'Data/hora inválida. Use o formato AAAA-MM-DDTHH:MM')
     }
 
