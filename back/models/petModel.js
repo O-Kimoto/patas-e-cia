@@ -1,61 +1,43 @@
-const db = require('../db/database')
+const { run, get, all } = require('../db/database')
 
-// Pegar pet pelo ID
-function findPetById(id, callback){
-    db.get('SELECT * FROM pets WHERE id = ?', [id], (err, row)=>{
-        callback(err,row)
-    })
+// Consulta base dos pets já trazendo o nome do tutor (relação pets.tutor_id -> tutores.id) - [Otávio Michels]
+const SELECT_PET = `
+    SELECT p.*, t.nome AS tutor_nome
+    FROM pets p
+    JOIN tutores t ON t.id = p.tutor_id
+`
+
+// Lista todos os pets ou só os de um tutor, quando tutorId é informado - [Otávio Michels]
+function getPets(tutorId) {
+    if (tutorId) {
+        return all(`${SELECT_PET} WHERE p.tutor_id = ? ORDER BY p.nome`, [tutorId])
+    }
+    return all(`${SELECT_PET} ORDER BY p.nome`)
 }
 
-// Pegar todos os pets
-function getPets(callback){
-    db.all('SELECT * FROM pets', [], (err, rows)=>{
-        callback(err, rows)
-    })
+function findPetById(id) {
+    return get(`${SELECT_PET} WHERE p.id = ?`, [id])
 }
 
-// Criar um novo pet
-function createPet(name, gender, color, breed, idTutor, callback){
-    console.log('salvando no banco', name)
-    db.run(
-        'INSERT INTO pets (name, gender, color, breed, id_tutor) VALUES (?, ?, ?, ?, ?)',[name, gender , color , breed, idTutor], (err)=>{
-            if(err){
-                console.error('Erro ao inserir pet:', err.message)
-                return callback(err)
-            }
-
-            const newPet = { name }
-            callback(null, newPet)
-        }
+async function createPet({ nome, especie, raca, sexo, tutor_id }) {
+    const { id } = await run(
+        'INSERT INTO pets (nome, especie, raca, sexo, tutor_id) VALUES (?, ?, ?, ?, ?)',
+        [nome, especie, raca, sexo, tutor_id]
     )
+    return findPetById(id)
 }
 
-function deletePet(id, callback){
-    db.run(
-        'DELETE FROM pets WHERE id = ?',[id], (err)=>{
-            if(err){
-                console.error('Erro ao deletar pet:', err.message)
-                return callback(err)
-            }
-
-            callback(null)
-        }
+async function updatePet(id, { nome, especie, raca, sexo, tutor_id }) {
+    await run(
+        'UPDATE pets SET nome = ?, especie = ?, raca = ?, sexo = ?, tutor_id = ? WHERE id = ?',
+        [nome, especie, raca, sexo, tutor_id, id]
     )
+    return findPetById(id)
 }
 
-function updatePet(id, name, gender, color, breed, callback){
-    db.run(
-        'UPDATE pets SET name = ?, gender = ?, color = ?, breed = ? WHERE id = ?',
-        [name, gender, color, breed, id],
-        (err)=>{
-            if(err){
-                console.error('Erro ao atualizar pet:', err.message)
-                return callback(err)
-            }
-
-            callback(null)
-        }
-    )
+async function deletePet(id) {
+    const { changes } = await run('DELETE FROM pets WHERE id = ?', [id])
+    return changes > 0
 }
 
-module.exports = {findPetById, createPet, getPets, deletePet, updatePet}
+module.exports = { getPets, findPetById, createPet, updatePet, deletePet }
