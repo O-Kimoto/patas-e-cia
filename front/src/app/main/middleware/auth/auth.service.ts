@@ -14,48 +14,40 @@ interface LoginResponse {
   token: string;
 }
 
+// Dados que o back grava dentro do token (ver gerarToken no authController) - [Otávio Michels]
+export interface UsuarioLogado {
+  id: number;
+  username: string;
+  nome?: string;
+  exp?: number;
+}
+
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
   private tokenKey = 'token';
-  private apiUrl = environment.baseUrl + '/auth'; // ajuste para a URL do seu backend
+  private apiUrl = environment.baseUrl + '/auth';
 
   constructor(
     private http: HttpClient,
     private router: Router
-  ) {
-    this.checkToken(); // Verifica se há um token válido e conecta o WebSocket após refresh
-  }
+  ) { }
 
-  // Método de login
+  // Faz login na API e guarda o token no localStorage - [Otávio Michels]
   async login(credentials: LoginCredentials): Promise<string> {
-    try {
-      // Make sure the endpoint matches your backend API
-      const response = await firstValueFrom(
-        this.http.post<LoginResponse>(`${this.apiUrl}/login`, credentials)
-      );
+    const response = await firstValueFrom(
+      this.http.post<LoginResponse>(`${this.apiUrl}/login`, credentials)
+    );
 
-      // Make sure the token is valid before saving it
-      if (response && response.token) {
-        await this.setToken(response.token);
-
-        return response.token;
-      } else {
-        throw new Error('Invalid token received from server');
-      }
-    } catch (error) {
-      console.error('Login error:', error);
-      throw error;
+    if (!response || !response.token) {
+      throw new Error('Token inválido recebido do servidor');
     }
+    this.setToken(response.token);
+    return response.token;
   }
 
-  // Salvar o token no localStorage
-  async setToken(token: string): Promise<void> {
-    if (!token) {
-      console.error('Attempting to set empty token');
-      return;
-    }
+  setToken(token: string): void {
     localStorage.setItem(this.tokenKey, token);
   }
 
@@ -67,63 +59,30 @@ export class AuthService {
     localStorage.removeItem(this.tokenKey);
   }
 
-  // Método de logout
+  // Sai do sistema: apaga o token e volta para o login - [Otávio Michels]
   logout(): void {
-    // Desconectar o WebSocket ao deslogar
-    console.log('Desconectando WebSocket ao fazer logout...');
-
-    // Remover o token
     this.removeToken();
     this.router.navigate(['/auth/login']);
-    window.location.reload();
   }
 
-  // Verifica se o usuário está autenticado
-  isAuthenticated(): boolean {
+  // Lê nome e id do usuário direto do token, sem precisar chamar a API - [Otávio Michels]
+  getUsuario(): UsuarioLogado | null {
     const token = this.getToken();
-    if (!token) {
-      return false;
-    }
-
+    if (!token) return null;
     try {
-      // Safe token validation
-      const decodedToken = jwtDecode(token);
-      const currentTime = Date.now() / 1000;
-
-      // Check if token has exp claim and is not expired
-      if (decodedToken && decodedToken.exp && decodedToken.exp > currentTime) {
-        return true;
-      }
-      return false;
-    } catch (error) {
-      console.error('Token validation error:', error);
-      this.removeToken(); // Clear invalid token
-      return false;
+      return jwtDecode<UsuarioLogado>(token);
+    } catch {
+      return null;
     }
   }
 
-  // Checar se o token é válido ao iniciar o serviço
-  private checkToken(): void {
-    const token = this.getToken();
-    if (token) {
-      try {
-        const decodedToken: any = jwtDecode(token);
-        const expirationDate = new Date(decodedToken.exp * 1000);
-
-        if (expirationDate < new Date()) {
-          this.logout();
-        } else {
-          // Conectar ao WebSocket se o token for válido
-          console.log('Reconectando WebSocket após refresh, token válido...');
-        }
-      } catch (error) {
-        console.error('Token validation error:', error);
-        this.logout();
-      }
+  // Autenticado = existe token e ele ainda não venceu - [Otávio Michels]
+  isAuthenticated(): boolean {
+    const usuario = this.getUsuario();
+    if (usuario && usuario.exp && usuario.exp > Date.now() / 1000) {
+      return true;
     }
+    this.removeToken();
+    return false;
   }
-
 }
-
-
-

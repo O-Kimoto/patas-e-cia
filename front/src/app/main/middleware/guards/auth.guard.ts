@@ -1,20 +1,23 @@
-// src/app/core/guards/auth.guard.ts
 import { Injectable } from '@angular/core';
 import { AuthService } from '../auth/auth.service';
-import { Router } from '@angular/router';
+import { Router, UrlTree } from '@angular/router';
 
+// Bloqueia as telas internas para quem não está logado e manda para o login - [Otávio Michels]
 @Injectable({
   providedIn: 'root',
 })
 export class AuthGuard {
-  constructor(private authService: AuthService, private router: Router) {}
+  constructor(private authService: AuthService, private router: Router) { }
 
-  canActivate(): boolean {
+  canActivate(): boolean | UrlTree {
     if (this.authService.isAuthenticated()) {
-      console.log('is authenticated');
       return true;
     }
-    this.router.navigate(['/auth/login']);
-    return false;
+    return this.router.createUrlTree(['/auth/login']);
+  }
+
+  // Confere de novo a cada troca de tela interna (o token pode ter vencido no meio do uso) - [Otávio Michels]
+  canActivateChild(): boolean | UrlTree {
+    return this.canActivate();
   }
 }
