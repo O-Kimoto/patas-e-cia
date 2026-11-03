@@ -35,6 +35,8 @@ const router = express.Router()
  *                   $ref: '#/components/schemas/Usuario'
  *       401:
  *         description: Usuário ou senha inválidos
+ *       429:
+ *         description: Muitas tentativas erradas; o usuário fica bloqueado por 15 minutos naquele IP
  */
 router.post('/login', asyncHandler(login))
 
