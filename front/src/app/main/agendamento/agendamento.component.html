@@ -8,6 +8,10 @@
                             (click)="abrirNovo()"></button>
                         <p-dropdown [options]="statusOpcoes" [(ngModel)]="filtroStatus" (onChange)="carregar()"
                             [showClear]="true" placeholder="Todos os status" styleClass="w-full sm:w-12rem"></p-dropdown>
+                        <!-- Filtro por tutor: mostra só os agendamentos dos pets dele - [Gabriel França] -->
+                        <p-dropdown [options]="tutores" optionLabel="nome" optionValue="id" [(ngModel)]="filtroTutor"
+                            (onChange)="carregar()" [showClear]="true" [filter]="true" placeholder="Todos os tutores"
+                            styleClass="w-full sm:w-14rem"></p-dropdown>
                         <p-calendar [(ngModel)]="filtroData" (onSelect)="carregar()" (onClear)="carregar()"
                             [showClear]="true" [showIcon]="true" dateFormat="dd/mm/yy" placeholder="Qualquer dia"
                             styleClass="w-full sm:w-12rem" appendTo="body"></p-calendar>

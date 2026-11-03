@@ -36,6 +36,8 @@ export class AgendamentoComponent implements OnInit {
 
     filtroStatus: StatusAgendamento | null = null;
     filtroData: Date | null = null;
+    // Ver só os agendamentos de um tutor (usa o ?tutor= da API) - [Gabriel França]
+    filtroTutor: number | null = null;
 
     statusOpcoes: StatusAgendamento[] = ['Agendado', 'Confirmado', 'Concluído', 'Cancelado'];
 
@@ -74,7 +76,8 @@ export class AgendamentoComponent implements OnInit {
         try {
             this.agendamentos = await this.agendamentoService.listar({
                 status: this.filtroStatus || '',
-                data: this.filtroData ? dataParaApi(this.filtroData) : ''
+                data: this.filtroData ? dataParaApi(this.filtroData) : '',
+                tutor: this.filtroTutor || ''
             });
         } catch (err) {
             this.erro(err);
@@ -91,6 +94,7 @@ export class AgendamentoComponent implements OnInit {
     limparFiltros() {
         this.filtroStatus = null;
         this.filtroData = null;
+        this.filtroTutor = null;
         this.carregar();
     }
 
