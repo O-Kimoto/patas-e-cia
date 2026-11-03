@@ -1,7 +1,7 @@
 <div class="layout-topbar">
     <a class="layout-topbar-logo" routerLink="">
-        <img src="assets/layout/images/{{layoutService.config.colorScheme === 'light' ? 'logo-dark' : 'logo-white'}}.svg" alt="logo">
-        <span>SAKAI</span>
+        <img src="assets/layout/images/logo-petshop.svg" alt="logo">
+        <span>Patas &amp; Cia</span>
     </a>
 
     <button #menubutton class="p-link layout-menu-button layout-topbar-button" (click)="layoutService.onMenuToggle()">
@@ -12,22 +12,15 @@
         <i class="pi pi-ellipsis-v"></i>
     </button>
 
-    <div #topbarmenu class="layout-topbar-menu" [ngClass]="{'layout-topbar-menu-mobile-active': layoutService.state.profileSidebarVisible}">
-        <button class="p-link layout-topbar-button">
-            <i class="pi pi-calendar"></i>
-            <span>Calendar</span>
-        </button>
-        <button class="p-link layout-topbar-button">
+    <!-- Usuário logado (lido do token) e botão de sair - [Otávio Michels] -->
+    <div #topbarmenu class="layout-topbar-menu align-items-center" [ngClass]="{'layout-topbar-menu-mobile-active': layoutService.state.profileSidebarVisible}">
+        <span class="flex align-items-center gap-2 px-3 text-700" *ngIf="usuario">
             <i class="pi pi-user"></i>
-            <span>Profile</span>
-        </button>
-        <button class="p-link layout-topbar-button" [routerLink]="'/documentation'">
-            <i class="pi pi-cog"></i>
-            <span>Settings</span>
-        </button>
-        <button class="p-link layout-topbar-button" (click)="logout()">
+            <span class="font-medium">{{ usuario.nome || usuario.username }}</span>
+        </span>
+        <button class="p-link layout-topbar-button" title="Sair" (click)="logout()">
             <i class="pi pi-sign-out"></i>
-            <span>Logout</span>
+            <span>Sair</span>
         </button>
     </div>
 </div>

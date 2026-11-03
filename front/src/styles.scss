@@ -8,7 +8,40 @@ $gutter: 1rem; //for primeflex grid system
 @import "../node_modules/primeflex/primeflex.scss";
 @import "../node_modules/primeicons/primeicons.css";
 
-/* Demos */
-@import "assets/demo/styles/flags/flags.css";
-@import "assets/demo/styles/badges.scss";
-@import "assets/demo/styles/code.scss";
+/* Ajustes do petshop - [Otávio Michels] */
+
+// Cartões do painel que são links: sem sublinhado e com leve destaque ao passar o mouse
+a.card {
+    transition: background-color .2s, transform .2s;
+}
+
+a.card:hover {
+    transform: translateY(-2px);
+}
+
+// No celular a barra de ferramentas das tabelas empilha os botões e filtros
+@media screen and (max-width: 640px) {
+    .p-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .p-toolbar .p-toolbar-group-left,
+    .p-toolbar .p-toolbar-group-right {
+        width: 100%;
+    }
+
+    .p-toolbar .p-toolbar-group-right .p-button {
+        width: 100%;
+    }
+}
+
+// Borda vermelha nos campos obrigatórios vazios ao tentar salvar (o tema só pinta ng-dirty/ng-invalid,
+// que o Angular controla sozinho, por isso a classe própria) - [Otávio Michels]
+.p-inputtext.campo-invalido,
+.campo-invalido > .p-inputtext,
+.campo-invalido > .p-dropdown,
+.campo-invalido > .p-inputnumber > .p-inputtext,
+.campo-invalido > .p-calendar > .p-inputtext {
+    border-color: #e24c4c !important;
+}

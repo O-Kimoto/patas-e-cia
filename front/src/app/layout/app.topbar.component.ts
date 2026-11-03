@@ -1,6 +1,7 @@
 import { Component, ElementRef, ViewChild } from '@angular/core';
 import { MenuItem } from 'primeng/api';
 import { LayoutService } from "./service/app.layout.service";
+import { AuthService, UsuarioLogado } from '../main/middleware/auth/auth.service';
 
 @Component({
     selector: 'app-topbar',
@@ -10,17 +11,20 @@ export class AppTopBarComponent {
 
     items!: MenuItem[];
 
+    usuario: UsuarioLogado | null;
+
     @ViewChild('menubutton') menuButton!: ElementRef;
 
     @ViewChild('topbarmenubutton') topbarMenuButton!: ElementRef;
 
     @ViewChild('topbarmenu') menu!: ElementRef;
 
-    constructor(public layoutService: LayoutService) { }
+    constructor(public layoutService: LayoutService, private authService: AuthService) {
+        this.usuario = this.authService.getUsuario();
+    }
 
-    logout(){
-        console.log("saindo")
-        localStorage.removeItem("token")
-        window.location.href = "/"
+    // Sai do sistema pelo AuthService (apaga o token e volta ao login) - [Otávio Michels]
+    logout() {
+        this.authService.logout();
     }
 }

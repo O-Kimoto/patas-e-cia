@@ -12,6 +12,9 @@ export class AppConfigComponent {
 
     scales: number[] = [12, 13, 14, 15, 16];
 
+    // Cores dos temas Lara que ficaram no projeto (assets/layout/styles/theme) - [Otávio Michels]
+    cores: string[] = ['teal', 'blue', 'indigo', 'purple'];
+
     constructor(public layoutService: LayoutService, public menuService: MenuService) { }
 
     get visible(): boolean {
