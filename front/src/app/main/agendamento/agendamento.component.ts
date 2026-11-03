@@ -110,6 +110,11 @@ export class AgendamentoComponent implements OnInit {
         this.submitted = false;
         this.agendamentoDialog = true;
         await this.carregarPets(agendamento.tutor_id);
+        // Clique duplo no lápis chamava o editar duas vezes: a segunda carga zerava a lista de pets e o
+        // dropdown do PrimeNG apagava o pet escolhido. Com os pets já carregados, devolve o pet do agendamento - [Gabriel França]
+        if (this.agendamento.id === agendamento.id && !this.agendamento.pet_id) {
+            this.agendamento.pet_id = agendamento.pet_id;
+        }
     }
 
     // Ao trocar o tutor, só os pets dele aparecem e o pet escolhido é limpo - [Otávio Michels]
