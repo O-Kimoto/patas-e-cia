@@ -129,8 +129,10 @@
                         <label for="dataHora">Data e hora *</label>
                         <p-calendar inputId="dataHora" [(ngModel)]="dataHora" [showTime]="true" hourFormat="24"
                             [stepMinute]="15" dateFormat="dd/mm/yy" [showIcon]="true" appendTo="body"
-                            [ngClass]="{ 'campo-invalido': submitted && !dataHora }"></p-calendar>
+                            [minDate]="dataMinima"
+                            [ngClass]="{ 'campo-invalido': submitted && (!dataHora || noPassado) }"></p-calendar>
                         <small class="p-error" *ngIf="submitted && !dataHora">Data e hora são obrigatórias</small>
+                        <small class="p-error" *ngIf="submitted && noPassado">Escolha uma data e hora a partir de agora</small>
                     </div>
                     <div class="field col-12 sm:col-5">
                         <label for="status">Status *</label>

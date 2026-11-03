@@ -21,6 +21,8 @@ export class AgendamentoComponent implements OnInit {
     agendamento: Agendamento = {};
     // O calendário trabalha com Date; na hora de salvar vira texto AAAA-MM-DDTHH:MM - [Otávio Michels]
     dataHora: Date | null = null;
+    // Agendamento novo começa a partir de agora; ao editar fica sem mínimo (ex.: concluir um de ontem) - [Gabriel França]
+    dataMinima: Date | null = null;
 
     tutores: Tutor[] = [];
     petsDoTutor: Pet[] = [];
@@ -99,6 +101,7 @@ export class AgendamentoComponent implements OnInit {
         amanha.setDate(amanha.getDate() + 1);
         amanha.setHours(9, 0, 0, 0);
         this.dataHora = amanha;
+        this.dataMinima = new Date();
         this.petsDoTutor = [];
         this.submitted = false;
         this.agendamentoDialog = true;
@@ -107,6 +110,7 @@ export class AgendamentoComponent implements OnInit {
     async editar(agendamento: Agendamento) {
         this.agendamento = { ...agendamento };
         this.dataHora = dataHoraDaApi(agendamento.data_hora || '');
+        this.dataMinima = null;
         this.submitted = false;
         this.agendamentoDialog = true;
         await this.carregarPets(agendamento.tutor_id);
@@ -143,10 +147,15 @@ export class AgendamentoComponent implements OnInit {
         return this.servicos.find(s => s.id === this.agendamento.servico_id);
     }
 
+    // Só vale para agendamento novo: os já cadastrados podem estar no passado - [Gabriel França]
+    get noPassado(): boolean {
+        return !this.agendamento.id && !!this.dataHora && this.dataHora.getTime() < Date.now();
+    }
+
     async salvar() {
         this.submitted = true;
         const a = this.agendamento;
-        if (!a.tutor_id || !a.pet_id || !a.servico_id || !this.dataHora || !a.status) return;
+        if (!a.tutor_id || !a.pet_id || !a.servico_id || !this.dataHora || !a.status || this.noPassado) return;
 
         a.data_hora = dataHoraParaApi(this.dataHora);
         this.salvando = true;
