@@ -113,8 +113,23 @@ router.post('/', asyncHandler(controller.criar))
  *         $ref: '#/components/responses/NaoAutenticado'
  *       404:
  *         $ref: '#/components/responses/NaoEncontrado'
+ *   delete:
+ *     summary: Exclui um usuário (não vale para si mesmo nem para o último)
+ *     tags: [Usuários]
+ *     parameters:
+ *       - $ref: '#/components/parameters/IdPath'
+ *     responses:
+ *       200:
+ *         description: Usuário excluído
+ *       401:
+ *         $ref: '#/components/responses/NaoAutenticado'
+ *       404:
+ *         $ref: '#/components/responses/NaoEncontrado'
+ *       409:
+ *         description: Tentou excluir o próprio usuário ou o último que sobrou
  */
 router.get('/:id', asyncHandler(controller.buscar))
 router.put('/:id', asyncHandler(controller.atualizar))
+router.delete('/:id', asyncHandler(controller.remover))
 
 module.exports = router

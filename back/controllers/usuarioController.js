@@ -55,4 +55,14 @@ async function atualizar(req, res) {
     res.json({ message: dados.password ? 'Usuário e senha atualizados' : 'Usuário atualizado com sucesso', usuario })
 }
 
-module.exports = { listar, buscar, criar, atualizar }
+// O sistema não pode ficar sem ninguém para entrar: ninguém exclui a si mesmo, e o último usuário fica - [Gabriel França]
+async function remover(req, res) {
+    const id = idDaRota(req)
+    if (!(await model.findUserById(id))) throw new HttpError(404, 'Usuário não encontrado')
+    if (id === req.user.id) throw new HttpError(409, 'Você não pode excluir o próprio usuário')
+    if ((await model.getUsers()).length <= 1) throw new HttpError(409, 'O sistema precisa ter pelo menos um usuário')
+    await model.deleteUser(id)
+    res.json({ message: 'Usuário excluído com sucesso' })
+}
+
+module.exports = { listar, buscar, criar, atualizar, remover }
