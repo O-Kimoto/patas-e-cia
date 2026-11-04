@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const { findUserById } = require('../models/userModel');
 
 // Protege as rotas privadas: exige o header "Authorization: Bearer <token>" com um JWT válido - [Otávio Michels]
 function authenticateToken(req, res, next) {
@@ -10,8 +11,14 @@ function authenticateToken(req, res, next) {
   jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
     // 401 também para token vencido: o front usa esse status para mandar o usuário de volta ao login - [Otávio Michels]
     if (err) return res.status(401).json({ message: 'Token inválido ou expirado. Faça login novamente.' });
-    req.user = user;
-    next();
+    // O token vale 1 dia, mas quem foi excluído perde o acesso na hora: confere se o usuário ainda existe - [Gabriel França]
+    findUserById(user.id)
+      .then((existe) => {
+        if (!existe) return res.status(401).json({ message: 'Este usuário não existe mais. Faça login novamente.' });
+        req.user = user;
+        next();
+      })
+      .catch(next);
   });
 }
 
