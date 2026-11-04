@@ -45,4 +45,14 @@ async function criar(req, res) {
     res.status(201).json({ message: 'Usuário criado com sucesso', usuario })
 }
 
-module.exports = { listar, buscar, criar }
+// Edita nome e login; a senha só muda quando uma nova vem no corpo (vazia mantém a atual) - [Gabriel França]
+async function atualizar(req, res) {
+    const id = idDaRota(req)
+    if (!(await model.findUserById(id))) throw new HttpError(404, 'Usuário não encontrado')
+    const dados = dadosDoUsuario(req.body, false)
+    await verificarLoginRepetido(dados.username, id)
+    const usuario = await model.updateUser(id, dados)
+    res.json({ message: dados.password ? 'Usuário e senha atualizados' : 'Usuário atualizado com sucesso', usuario })
+}
+
+module.exports = { listar, buscar, criar, atualizar }

@@ -80,7 +80,41 @@ router.post('/', asyncHandler(controller.criar))
  *         $ref: '#/components/responses/NaoAutenticado'
  *       404:
  *         $ref: '#/components/responses/NaoEncontrado'
+ *   put:
+ *     summary: Edita nome e login; envie password só para trocar a senha
+ *     tags: [Usuários]
+ *     parameters:
+ *       - $ref: '#/components/parameters/IdPath'
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [nome, username]
+ *             properties:
+ *               nome:
+ *                 type: string
+ *                 example: Ana Souza
+ *               username:
+ *                 type: string
+ *                 example: ana.souza
+ *               password:
+ *                 type: string
+ *                 description: Opcional; vazio ou ausente mantém a senha atual
+ *     responses:
+ *       200:
+ *         description: Usuário atualizado
+ *       400:
+ *         $ref: '#/components/responses/Invalido'
+ *       409:
+ *         description: Esse login já está em uso por outro usuário
+ *       401:
+ *         $ref: '#/components/responses/NaoAutenticado'
+ *       404:
+ *         $ref: '#/components/responses/NaoEncontrado'
  */
 router.get('/:id', asyncHandler(controller.buscar))
+router.put('/:id', asyncHandler(controller.atualizar))
 
 module.exports = router
