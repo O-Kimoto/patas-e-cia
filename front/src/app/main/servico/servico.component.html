@@ -2,6 +2,10 @@
     <div class="col-12">
         <div class="card px-4 py-4 md:px-6 md:py-5">
             <p-toolbar styleClass="mb-4 gap-2">
+                <ng-template pTemplate="left">
+                    <button pButton pRipple label="Novo serviço" icon="pi pi-plus" class="p-button-success"
+                        (click)="abrirNovo()"></button>
+                </ng-template>
                 <ng-template pTemplate="right">
                     <button pButton pRipple label="Exportar CSV" icon="pi pi-download"
                         class="p-button-help p-button-outlined" (click)="dt.exportCSV()"></button>
@@ -29,6 +33,7 @@
                         <th pSortableColumn="nome">Serviço <p-sortIcon field="nome"></p-sortIcon></th>
                         <th>Descrição</th>
                         <th pSortableColumn="preco" class="text-right">Preço <p-sortIcon field="preco"></p-sortIcon></th>
+                        <th class="text-right">Ações</th>
                     </tr>
                 </ng-template>
                 <ng-template pTemplate="body" let-s>
@@ -39,12 +44,53 @@
                             <span class="p-column-title">Preço</span>
                             <span class="font-medium">{{ s.preco | currency:'BRL' }}</span>
                         </td>
+                        <td>
+                            <span class="p-column-title">Ações</span>
+                            <div class="flex md:justify-content-end gap-2">
+                                <button pButton pRipple icon="pi pi-pencil" class="p-button-rounded p-button-success"
+                                    pTooltip="Editar" (click)="editar(s)"></button>
+                                <button pButton pRipple icon="pi pi-trash" class="p-button-rounded p-button-warning"
+                                    pTooltip="Excluir" (click)="excluir(s)"></button>
+                            </div>
+                        </td>
                     </tr>
                 </ng-template>
                 <ng-template pTemplate="emptymessage">
-                    <tr><td colspan="3" class="text-center p-4">Nenhum serviço cadastrado.</td></tr>
+                    <tr><td colspan="4" class="text-center p-4">Nenhum serviço cadastrado.</td></tr>
                 </ng-template>
             </p-table>
         </div>
+
+        <!-- Cadastro e edição do serviço; o preço é digitado já no formato R$ 0,00 - [Gabriel França] -->
+        <p-dialog [(visible)]="servicoDialog" [style]="{ width: '480px' }" [breakpoints]="{ '640px': '95vw' }"
+            [header]="servico.id ? 'Editar serviço' : 'Novo serviço'" [modal]="true" class="p-fluid">
+            <ng-template pTemplate="content">
+                <div class="field">
+                    <label for="nome">Nome *</label>
+                    <input pInputText id="nome" [(ngModel)]="servico.nome" maxlength="80" placeholder="Ex.: Banho"
+                        [ngClass]="{ 'campo-invalido': submitted && !servico.nome?.trim() }" />
+                    <small class="p-error" *ngIf="submitted && !servico.nome?.trim()">Nome é obrigatório</small>
+                </div>
+                <div class="field">
+                    <label for="descricao">Descrição</label>
+                    <textarea pInputTextarea id="descricao" [(ngModel)]="servico.descricao" rows="2" [autoResize]="true"
+                        placeholder="Ex.: banho com shampoo neutro, secagem e perfume"></textarea>
+                </div>
+                <div class="field">
+                    <label for="preco">Preço *</label>
+                    <p-inputNumber inputId="preco" [(ngModel)]="servico.preco" mode="currency" currency="BRL"
+                        locale="pt-BR" [min]="0" [maxFractionDigits]="2" placeholder="R$ 0,00"
+                        [ngClass]="{ 'campo-invalido': submitted && precoFaltando }"></p-inputNumber>
+                    <small class="p-error" *ngIf="submitted && precoFaltando">Preço é obrigatório</small>
+                </div>
+            </ng-template>
+
+            <ng-template pTemplate="footer">
+                <button pButton pRipple label="Cancelar" icon="pi pi-times" class="p-button-text"
+                    (click)="servicoDialog = false"></button>
+                <button pButton pRipple label="Salvar" icon="pi pi-check" [loading]="salvando"
+                    (click)="salvar()"></button>
+            </ng-template>
+        </p-dialog>
     </div>
 </div>
