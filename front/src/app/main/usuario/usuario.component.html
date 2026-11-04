@@ -1,6 +1,13 @@
 <div class="grid">
     <div class="col-12">
         <div class="card px-4 py-4 md:px-6 md:py-5">
+            <p-toolbar styleClass="mb-4 gap-2">
+                <ng-template pTemplate="left">
+                    <button pButton pRipple label="Novo usuário" icon="pi pi-plus" class="p-button-success"
+                        (click)="abrirNovo()"></button>
+                </ng-template>
+            </p-toolbar>
+
             <!-- Quem pode entrar no sistema; a senha nunca chega aqui - [Otávio Michels] -->
             <p-table #dt [value]="usuarios" [loading]="carregando" responsiveLayout="stack" breakpoint="960px"
                 [rows]="10" [paginator]="true" [rowsPerPageOptions]="[10, 20, 50]" [showCurrentPageReport]="true"
@@ -21,6 +28,7 @@
                         <th pSortableColumn="nome">Nome <p-sortIcon field="nome"></p-sortIcon></th>
                         <th pSortableColumn="username">Login <p-sortIcon field="username"></p-sortIcon></th>
                         <th pSortableColumn="criado_em">Criado em <p-sortIcon field="criado_em"></p-sortIcon></th>
+                        <th class="text-right">Ações</th>
                     </tr>
                 </ng-template>
                 <ng-template pTemplate="body" let-u>
@@ -34,12 +42,69 @@
                         </td>
                         <td><span class="p-column-title">Login</span>{{ u.username }}</td>
                         <td><span class="p-column-title">Criado em</span>{{ criadoEm(u) | date:'dd/MM/yyyy HH:mm' }}</td>
+                        <td>
+                            <span class="p-column-title">Ações</span>
+                            <div class="flex md:justify-content-end gap-2">
+                                <button pButton pRipple icon="pi pi-pencil" class="p-button-rounded p-button-success"
+                                    pTooltip="Editar ou trocar senha" (click)="editar(u)"></button>
+                                <!-- span em volta para o tooltip aparecer mesmo com o botão desligado - [Gabriel França] -->
+                                <span [pTooltip]="souEu(u) ? 'Você não pode excluir o próprio usuário' : 'Excluir'">
+                                    <button pButton pRipple icon="pi pi-trash" class="p-button-rounded p-button-warning"
+                                        [disabled]="souEu(u)" (click)="excluir(u)"></button>
+                                </span>
+                            </div>
+                        </td>
                     </tr>
                 </ng-template>
                 <ng-template pTemplate="emptymessage">
-                    <tr><td colspan="3" class="text-center p-4">Nenhum usuário encontrado.</td></tr>
+                    <tr><td colspan="4" class="text-center p-4">Nenhum usuário encontrado.</td></tr>
                 </ng-template>
             </p-table>
         </div>
+
+        <!-- Cadastro e edição; na edição a senha em branco mantém a atual - [Gabriel França] -->
+        <p-dialog [(visible)]="usuarioDialog" [style]="{ width: '480px' }" [breakpoints]="{ '640px': '95vw' }"
+            [header]="usuario.id ? 'Editar usuário' : 'Novo usuário'" [modal]="true" class="p-fluid">
+            <ng-template pTemplate="content">
+                <div class="field">
+                    <label for="nome">Nome *</label>
+                    <input pInputText id="nome" [(ngModel)]="usuario.nome" maxlength="80" placeholder="Ex.: Ana Souza"
+                        [ngClass]="{ 'campo-invalido': submitted && !usuario.nome?.trim() }" />
+                    <small class="p-error" *ngIf="submitted && !usuario.nome?.trim()">Nome é obrigatório</small>
+                </div>
+                <div class="field">
+                    <label for="username">Login *</label>
+                    <input pInputText id="username" [(ngModel)]="usuario.username" maxlength="30" placeholder="Ex.: ana.souza"
+                        autocomplete="off" [ngClass]="{ 'campo-invalido': submitted && loginInvalido }" />
+                    <small class="p-error" *ngIf="submitted && loginInvalido">
+                        De 3 a 30 caracteres: letras sem acento, números, ponto, hífen ou sublinhado
+                    </small>
+                </div>
+                <div class="formgrid grid">
+                    <div class="field col-12 sm:col-6">
+                        <label for="senha">{{ usuario.id ? 'Nova senha' : 'Senha *' }}</label>
+                        <input pInputText id="senha" type="password" [(ngModel)]="usuario.password" autocomplete="new-password"
+                            [placeholder]="usuario.id ? 'Em branco mantém a atual' : 'Mínimo 6 caracteres'"
+                            [ngClass]="{ 'campo-invalido': submitted && senhaInvalida }" />
+                        <small class="p-error" *ngIf="submitted && senhaInvalida">
+                            {{ !usuario.id && !usuario.password ? 'Senha é obrigatória' : 'Mínimo 6 caracteres' }}
+                        </small>
+                    </div>
+                    <div class="field col-12 sm:col-6">
+                        <label for="confirmacao">Repita a senha</label>
+                        <input pInputText id="confirmacao" type="password" [(ngModel)]="confirmacao" autocomplete="new-password"
+                            [ngClass]="{ 'campo-invalido': submitted && confirmacaoDiferente }" />
+                        <small class="p-error" *ngIf="submitted && confirmacaoDiferente">As senhas não são iguais</small>
+                    </div>
+                </div>
+            </ng-template>
+
+            <ng-template pTemplate="footer">
+                <button pButton pRipple label="Cancelar" icon="pi pi-times" class="p-button-text"
+                    (click)="usuarioDialog = false"></button>
+                <button pButton pRipple label="Salvar" icon="pi pi-check" [loading]="salvando"
+                    (click)="salvar()"></button>
+            </ng-template>
+        </p-dialog>
     </div>
 </div>
