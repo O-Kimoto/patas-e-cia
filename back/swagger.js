@@ -152,7 +152,8 @@ const options = {
             { name: 'Agendamentos', description: 'Tutor + pet + serviço + data/hora + status' },
             { name: 'Tutores', description: 'Donos dos pets' },
             { name: 'Pets', description: 'Animais, ligados a um tutor (tutor_id)' },
-            { name: 'Serviços', description: 'Banho, tosa, consulta, vacinação...' }
+            { name: 'Serviços', description: 'Banho, tosa, consulta, vacinação...' },
+            { name: 'Usuários', description: 'Quem entra no sistema (a senha nunca é devolvida)' }
         ],
         components: {
             securitySchemes: {
