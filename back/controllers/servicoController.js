@@ -1,10 +1,20 @@
 const model = require('../models/servicoModel')
 const { HttpError, exigirCampos, idDaRota, numeroNaoNegativo, traduzirEmUso, texto } = require('./helpers')
 
+// Preço em reais com no máximo 2 casas (centavos): 19.999 é recusado em vez de ser arredondado escondido - [Otávio Michels]
+function precoEmReais(valor) {
+    const preco = numeroNaoNegativo(valor, 'Preço')
+    const centavos = Math.round(preco * 100)
+    if (Math.abs(preco * 100 - centavos) > 1e-6) {
+        throw new HttpError(400, 'Preço deve ter no máximo 2 casas decimais (centavos)')
+    }
+    return centavos / 100
+}
+
 // Valida nome e preço do serviço - [Otávio Michels]
 function dadosDoServico(body) {
     exigirCampos(body, ['nome', 'preco'])
-    return { nome: texto(body.nome), descricao: texto(body.descricao), preco: numeroNaoNegativo(body.preco, 'Preço') }
+    return { nome: texto(body.nome), descricao: texto(body.descricao), preco: precoEmReais(body.preco) }
 }
 
 async function listar(req, res) {
