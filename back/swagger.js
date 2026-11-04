@@ -29,6 +29,16 @@ const schemas = {
             criado_em: { type: 'string', example: '2026-10-29 03:00:00' }
         }
     },
+    // Corpo do cadastro/edição de usuário; na edição a senha é opcional - [Gabriel França]
+    UsuarioInput: {
+        type: 'object',
+        required: ['nome', 'username', 'password'],
+        properties: {
+            nome: { type: 'string', example: 'Ana Souza' },
+            username: { type: 'string', example: 'ana.souza', description: '3 a 30 caracteres: letras sem acento, números, ponto, hífen ou sublinhado' },
+            password: { type: 'string', example: 'segredo1', description: 'Pelo menos 6 caracteres' }
+        }
+    },
     TutorInput: {
         type: 'object',
         required: ['nome', 'telefone'],

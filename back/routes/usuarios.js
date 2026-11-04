@@ -27,8 +27,36 @@ router.use(authenticateToken)
  *                     $ref: '#/components/schemas/Usuario'
  *       401:
  *         $ref: '#/components/responses/NaoAutenticado'
+ *   post:
+ *     summary: Cadastra um usuário (a senha é guardada só como hash)
+ *     tags: [Usuários]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/UsuarioInput'
+ *     responses:
+ *       201:
+ *         description: Usuário criado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 usuario:
+ *                   $ref: '#/components/schemas/Usuario'
+ *       400:
+ *         $ref: '#/components/responses/Invalido'
+ *       409:
+ *         description: Esse login já está em uso
+ *       401:
+ *         $ref: '#/components/responses/NaoAutenticado'
  */
 router.get('/', asyncHandler(controller.listar))
+router.post('/', asyncHandler(controller.criar))
 
 /**
  * @swagger
