@@ -1,0 +1,45 @@
+<div class="grid">
+    <div class="col-12">
+        <div class="card px-4 py-4 md:px-6 md:py-5">
+            <!-- Quem pode entrar no sistema; a senha nunca chega aqui - [Otávio Michels] -->
+            <p-table #dt [value]="usuarios" [loading]="carregando" responsiveLayout="stack" breakpoint="960px"
+                [rows]="10" [paginator]="true" [rowsPerPageOptions]="[10, 20, 50]" [showCurrentPageReport]="true"
+                currentPageReportTemplate="{first} a {last} de {totalRecords} usuários"
+                [globalFilterFields]="['nome', 'username']" [rowHover]="true" dataKey="id">
+                <ng-template pTemplate="caption">
+                    <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center gap-2">
+                        <h5 class="m-0">Usuários do sistema</h5>
+                        <span class="block p-input-icon-left">
+                            <i class="pi pi-search"></i>
+                            <input pInputText type="text" (input)="onGlobalFilter(dt, $event)"
+                                placeholder="Buscar por nome ou login..." class="w-full sm:w-20rem" />
+                        </span>
+                    </div>
+                </ng-template>
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th pSortableColumn="nome">Nome <p-sortIcon field="nome"></p-sortIcon></th>
+                        <th pSortableColumn="username">Login <p-sortIcon field="username"></p-sortIcon></th>
+                        <th pSortableColumn="criado_em">Criado em <p-sortIcon field="criado_em"></p-sortIcon></th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-u>
+                    <tr>
+                        <td>
+                            <span class="p-column-title">Nome</span>
+                            <span class="flex align-items-center gap-2">
+                                <span class="font-medium">{{ u.nome || '—' }}</span>
+                                <p-tag *ngIf="souEu(u)" value="você" severity="info"></p-tag>
+                            </span>
+                        </td>
+                        <td><span class="p-column-title">Login</span>{{ u.username }}</td>
+                        <td><span class="p-column-title">Criado em</span>{{ criadoEm(u) | date:'dd/MM/yyyy HH:mm' }}</td>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="emptymessage">
+                    <tr><td colspan="3" class="text-center p-4">Nenhum usuário encontrado.</td></tr>
+                </ng-template>
+            </p-table>
+        </div>
+    </div>
+</div>
