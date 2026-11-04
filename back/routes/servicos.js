@@ -41,6 +41,8 @@ router.use(authenticateToken)
  *         description: Serviço criado
  *       400:
  *         $ref: '#/components/responses/Invalido'
+ *       409:
+ *         description: Já existe um serviço com esse nome
  *       401:
  *         $ref: '#/components/responses/NaoAutenticado'
  */
@@ -85,6 +87,8 @@ router.post('/', asyncHandler(controller.criar))
  *         description: Serviço atualizado
  *       400:
  *         $ref: '#/components/responses/Invalido'
+ *       409:
+ *         description: Já existe outro serviço com esse nome
  *       401:
  *         $ref: '#/components/responses/NaoAutenticado'
  *       404:
