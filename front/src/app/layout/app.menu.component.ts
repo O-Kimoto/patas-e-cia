@@ -13,7 +13,7 @@ export class AppMenuComponent implements OnInit {
     constructor(public layoutService: LayoutService) { }
 
     // Menu lateral do petshop, agrupado por assunto - [Otávio Michels]
-    // Nesta parte só Agendamentos funciona; os outros itens ficam no layout, mas ainda sem link
+    // Nesta parte funcionam Agendamentos e Serviços; os outros itens ficam no layout, mas ainda sem link
     ngOnInit() {
         this.model = [
             {
@@ -38,7 +38,7 @@ export class AppMenuComponent implements OnInit {
             {
                 label: 'Catálogo',
                 items: [
-                    { label: 'Serviços', icon: 'pi pi-fw pi-star' },
+                    { label: 'Serviços', icon: 'pi pi-fw pi-star', routerLink: ['/servicos'] },
                     { label: 'Produtos', icon: 'pi pi-fw pi-shopping-bag' }
                 ]
             },

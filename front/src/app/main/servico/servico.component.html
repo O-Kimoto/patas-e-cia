@@ -1,0 +1,50 @@
+<div class="grid">
+    <div class="col-12">
+        <div class="card px-4 py-4 md:px-6 md:py-5">
+            <p-toolbar styleClass="mb-4 gap-2">
+                <ng-template pTemplate="right">
+                    <button pButton pRipple label="Exportar CSV" icon="pi pi-download"
+                        class="p-button-help p-button-outlined" (click)="dt.exportCSV()"></button>
+                </ng-template>
+            </p-toolbar>
+
+            <!-- Tabela de preços dos serviços; o valor sai em reais pelo pipe currency - [Otávio Michels] -->
+            <p-table #dt [value]="servicos" [columns]="colunasCsv" exportFilename="servicos-e-precos" [loading]="carregando"
+                responsiveLayout="stack" breakpoint="960px" [rows]="10" [paginator]="true"
+                [rowsPerPageOptions]="[10, 20, 50]" [showCurrentPageReport]="true"
+                currentPageReportTemplate="{first} a {last} de {totalRecords} serviços"
+                [globalFilterFields]="['nome', 'descricao']" [rowHover]="true" dataKey="id">
+                <ng-template pTemplate="caption">
+                    <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center gap-2">
+                        <h5 class="m-0">Serviços e preços</h5>
+                        <span class="block p-input-icon-left">
+                            <i class="pi pi-search"></i>
+                            <input pInputText type="text" (input)="onGlobalFilter(dt, $event)"
+                                placeholder="Buscar serviço..." class="w-full sm:w-20rem" />
+                        </span>
+                    </div>
+                </ng-template>
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th pSortableColumn="nome">Serviço <p-sortIcon field="nome"></p-sortIcon></th>
+                        <th>Descrição</th>
+                        <th pSortableColumn="preco" class="text-right">Preço <p-sortIcon field="preco"></p-sortIcon></th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-s>
+                    <tr>
+                        <td><span class="p-column-title">Serviço</span><span class="font-medium">{{ s.nome }}</span></td>
+                        <td><span class="p-column-title">Descrição</span><span class="text-600">{{ s.descricao || '—' }}</span></td>
+                        <td class="text-right">
+                            <span class="p-column-title">Preço</span>
+                            <span class="font-medium">{{ s.preco | currency:'BRL' }}</span>
+                        </td>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="emptymessage">
+                    <tr><td colspan="3" class="text-center p-4">Nenhum serviço cadastrado.</td></tr>
+                </ng-template>
+            </p-table>
+        </div>
+    </div>
+</div>
